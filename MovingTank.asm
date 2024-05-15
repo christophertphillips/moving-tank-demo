@@ -3,6 +3,18 @@
 .include "IncFiles/reset.inc"
 .include "IncFiles/utils.inc"
 
+;--------------------------------------------------------
+; ROM-specific constants
+;--------------------------------------------------------
+
+MAXSPEED    =     120
+ACCEL       =     2
+BRAKE       =     2
+
+;--------------------------------------------------------
+; RAM
+;--------------------------------------------------------
+
 .segment "ZEROPAGE"
 Buttons:  .res 1              ; 1eserve 1 byte to store button state
 XPos:     .res 2              ; reserve 2 byte to store player X position, (8.8 fixed-point math), (Xhi + Xlo/256) pixels
