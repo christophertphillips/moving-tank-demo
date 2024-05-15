@@ -7,9 +7,9 @@
 ; ROM-specific constants
 ;--------------------------------------------------------
 
-MAXSPEED    =     120
-ACCEL       =     2
-BRAKE       =     2
+MAXSPEED  = 120               ; Max player speed in 1/256 px/frame
+ACCEL     = 2                 ; Movement acceleration in 1/256 px/frame^2
+BRAKE     = 2                 ; Movement deceleration in 1/256 px/frame^2
 
 ;--------------------------------------------------------
 ; RAM
