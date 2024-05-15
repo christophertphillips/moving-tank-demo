@@ -5,8 +5,10 @@
 
 .segment "ZEROPAGE"
 Buttons:  .res 1              ; 1eserve 1 byte to store button state
-XPos:     .res 1              ; reserve 1 byte to store player X position
-YPos:     .res 1              ; reserve 1 byte to store player Y position
+XPos:     .res 2              ; reserve 2 byte to store player X position, (8.8 fixed-point math), (Xhi + Xlo/256) pixels
+YPos:     .res 2              ; reserve 2 byte to store player Y position, (8.8 fixed-point math), (Yhi + Ylo/256) pixels
+XVel:     .res 1              ; reserve 1 byte to store player X speed in pixels per 256 frames (pixel/256frames)
+YVel:     .res 1              ; reserve 1 byte to store player Y speed in pixels per 256 frames (pixel/256frames)
 Frame:    .res 1              ; reserve 1 byte to store # of frames
 Clock60:  .res 1              ; reserve 1 byte to store # of elapsed seconds
 BgPtr:    .res 2              ; reserve 2 bytes to store a pointer to the background address
@@ -93,9 +95,9 @@ Reset:
   sta Clock60
 
   lda SpriteData+3            ; load default XPos of player sprite
-  sta XPos
+  sta XPos+1                  ; store hi byte of position (which represents whole pixel count)
   lda SpriteData              ; load default YPos of player sprite
-  sta YPos
+  sta YPos+1                  ; store hi byte of position (which represents whole pixel count)
 
 Main:
   jsr LoadPalette             ; set palette data
@@ -148,7 +150,7 @@ CheckRightButton:
 :
 
   ; calculate x positions of player metasprite
-  lda XPos
+  lda XPos+1                  ; load hi byte of position (which represents whole pixel count)
   sta $0200+3                 ; set the first player sprite X position to be XPos
   sta $0208+3                 ; set the third player sprite X position to be XPos
   clc
@@ -157,7 +159,7 @@ CheckRightButton:
   sta $020C+3                 ; set the fourth player sprite X position to be XPos+8
 
   ; calculate x positions of player metasprite
-  lda YPos
+  lda YPos+1                  ; load hi byte of position (which represents whole pixel count)
   sta $0200                   ; set the first player sprite Y position to be YPos
   sta $0204                   ; set the second player sprite Y position to be YPos
   clc
