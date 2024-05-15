@@ -102,7 +102,8 @@ Loop:
 Reset:
   INIT_NES
 
-  lda #0
+InitVariables:
+  lda #0                      ; set frame, clock counters to 0
   sta Frame
   sta Clock60
 
@@ -161,8 +162,8 @@ CheckRightButton:
     ;inc XPos                    ; move player sprite right
 :
 
-  ; calculate x positions of player metasprite
-  lda XPos+1                  ; load hi byte of position (which represents whole pixel count)
+DrawSprite:
+  lda XPos+1                  ; load hi byte of X position (which represents whole pixel count)
   sta $0200+3                 ; set the first player sprite X position to be XPos
   sta $0208+3                 ; set the third player sprite X position to be XPos
   clc
@@ -170,8 +171,7 @@ CheckRightButton:
   sta $0204+3                 ; set the second player sprite X position to be XPos+8
   sta $020C+3                 ; set the fourth player sprite X position to be XPos+8
 
-  ; calculate x positions of player metasprite
-  lda YPos+1                  ; load hi byte of position (which represents whole pixel count)
+  lda YPos+1                  ; load hi byte of Y position (which represents whole pixel count)
   sta $0200                   ; set the first player sprite Y position to be YPos
   sta $0204                   ; set the second player sprite Y position to be YPos
   clc
@@ -183,7 +183,7 @@ CheckRightButton:
   lda Frame                   ; check if 60 frames have been counted
   cmp #60
   bne SkipClock60Increment    ; if no, skip
-    inc Clock60                 ; else, increment Clock60 and reset Frame to 0
+    inc Clock60               ; else, increment Clock60 and reset Frame to 0
     lda #0
     sta Frame
 SkipClock60Increment:
