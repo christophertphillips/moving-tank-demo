@@ -1,0 +1,214 @@
+.include "IncFiles/consts.inc"
+.include "IncFiles/header.inc"
+.include "IncFiles/reset.inc"
+.include "IncFiles/utils.inc"
+
+.segment "ZEROPAGE"
+Buttons:  .res 1              ; 1eserve 1 byte to store button state
+XPos:     .res 1              ; reserve 1 byte to store player X position
+YPos:     .res 1              ; reserve 1 byte to store player Y position
+Frame:    .res 1              ; reserve 1 byte to store # of frames
+Clock60:  .res 1              ; reserve 1 byte to store # of elapsed seconds
+BgPtr:    .res 2              ; reserve 2 bytes to store a pointer to the background address
+
+;--------------------------------------------------------
+; PRG-ROM (at $8000)
+;-------------------------------------------------------- 
+
+.segment "CODE"
+
+.proc LoadPalette
+  PPU_SETADDR $3F00           ; set PPU address to $3F00
+
+ ldx #0
+Loop:
+  lda PaletteData,X           ; get color value
+  sta PPU_DATA                ; send value to PPU_DATA
+  inx
+  cpx #32                     ; loop through all 32 colors
+  bne Loop
+
+  rts
+.endproc
+
+.proc LoadBackground
+  lda #<BackgroundData        ; load lower byte of BackgroundData address
+  sta BgPtr
+  lda #>BackgroundData        ; load upper byte of BackgroundData address
+  sta BgPtr+1
+
+  PPU_SETADDR $2000           ; set PPU address to $2000
+
+  ldx #0                      ; init counters for hi/lo byte indexes
+  ldy #0
+OuterLoop:
+InnerLoop:                    ; loop through all 256 bytes of current background data "chunk"
+  lda (BgPtr),Y               ; lookup byte in ROM
+  sta PPU_DATA                ; send value to PPU_DATA
+  iny
+  ; cpx #0                    ; check if current 256 byte "chunk" is completely loaded
+  bne InnerLoop               ; if no, perform inner loop again
+IncreaseHiByte:               ; else, increase hi byte of background pointer
+  inc BgPtr+1
+  inx
+  cpx #4                      ; check if *all* background data has been loaded
+  bne OuterLoop               ; if no, perform outer loop again
+
+  rts                         ; else, return from subroutine
+.endproc
+
+.proc LoadSprites
+  ldx #0
+Loop:
+  lda SpriteData,X          ; load tile
+  sta $0200,X               ; send tile to RAM (to be transferred to VRAM via DMA later)
+  inx
+  cpx #16                   ; check if all tiles have been send to RAM
+  bne Loop                  ; if no, loop and store next tile
+
+  rts                       ; else, return from subroutine
+.endproc
+
+.proc ReadControllers
+  lda #1                    ; set rightmost of Buttons to 1; use later to determine when Buttons is 'full'
+  sta Buttons
+  sta JOYPAD_1              ; strobe latch to 'input mode' via Latch line
+  lda #0
+  sta JOYPAD_1              ; strobe latch to 'output mode' via Latch line
+Loop:
+  lda JOYPAD_1              ; 1) read bit from Data line and invert its
+                            ; 2) send signal via Clock line to shift bits inside controller
+  lsr                       ; right-shift accumualtor to put the just-read bit into the carry flag
+  rol Buttons               ; rotate-left Buttons to put the carry flag into the rightmost Buttons bit; initial 1 bit moves rightward
+  bcc Loop                  ; if initial 1 bit has not reached the carry due to rol, get next controller bit
+
+  rts                       ; else, return from subroutine
+.endproc
+
+Reset:
+  INIT_NES
+
+  lda #0
+  sta Frame
+  sta Clock60
+
+  lda SpriteData+3            ; load default XPos of player sprite
+  sta XPos
+  lda SpriteData              ; load default YPos of player sprite
+  sta YPos
+
+Main:
+  jsr LoadPalette             ; set palette data
+  jsr LoadBackground          ; set background (nametable) data
+  jsr LoadSprites             ; set sprites (from tiles)
+
+  lda #%10010000              ; enable NMI interrupts from PPU and set background to use 2nd pattern table
+  sta PPU_CTRL
+
+  lda #$00                    ; disable scroll in X and Y
+  sta PPU_SCROLL              ; X
+  sta PPU_SCROLL              ; Y
+
+  lda #%00011110              ; set PPU_MASK bits to show background
+  sta PPU_MASK
+
+LoopForever:                  ; loop forever at end of program
+  jmp LoopForever
+
+;--------------------------------------------------------
+; NMI interrupt handler
+;-------------------------------------------------------- 
+
+NMI:
+  lda #$02                    ; indicate that sprite data to be copied is at $02**
+  sta PPU_OAM_DMA             ; initiate DMA copy (indicating address above)
+
+  jsr ReadControllers         ; read controller inputs
+
+CheckUpButton:
+  lda #BUTTON_UP              ; check if up button is pressed
+  bit Buttons
+  beq CheckDownButton
+    ;dec YPos                    ; move player sprite up
+CheckDownButton:
+  lda #BUTTON_DOWN            ; check if down button is pressed
+  bit Buttons
+  beq CheckLeftButton
+    ;inc YPos                    ; move player sprite down
+CheckLeftButton:
+  lda #BUTTON_LEFT            ; check if left button is pressed
+  bit Buttons
+  beq CheckRightButton
+    ;dec XPos                    ; move player sprite left
+CheckRightButton:
+  lda #BUTTON_RIGHT           ; check if right button is pressed
+  bit Buttons
+  beq :+
+    ;inc XPos                    ; move player sprite right
+:
+
+  ; calculate x positions of player metasprite
+  lda XPos
+  sta $0200+3                 ; set the first player sprite X position to be XPos
+  sta $0208+3                 ; set the third player sprite X position to be XPos
+  clc
+  adc #8
+  sta $0204+3                 ; set the second player sprite X position to be XPos+8
+  sta $020C+3                 ; set the fourth player sprite X position to be XPos+8
+
+  ; calculate x positions of player metasprite
+  lda YPos
+  sta $0200                   ; set the first player sprite Y position to be YPos
+  sta $0204                   ; set the second player sprite Y position to be YPos
+  clc
+  adc #8
+  sta $0208                   ; set the third player sprite Y position to be YPos
+  sta $020C                   ; set the fourth player sprite Y position to be YPos
+
+  inc Frame                   ; increment Frame
+  lda Frame                   ; check if 60 frames have been counted
+  cmp #60
+  bne SkipClock60Increment    ; if no, skip
+    inc Clock60                 ; else, increment Clock60 and reset Frame to 0
+    lda #0
+    sta Frame
+SkipClock60Increment:
+
+  rti
+
+;--------------------------------------------------------
+; IRQ interrupt handler
+;--------------------------------------------------------
+
+IRQ:
+  rti
+
+;--------------------------------------------------------
+; graphics data (palettes, CHRs, nametable data, etc.)
+;--------------------------------------------------------
+
+PaletteData:
+.byte $1D,$10,$20,$2D, $1D,$1D,$2D,$10, $1D,$0C,$19,$1D, $1D,$06,$17,$07 ; Background palette
+.byte $0F,$1D,$19,$29, $0F,$08,$18,$38, $0F,$0C,$1C,$3C, $0F,$2D,$10,$30 ; Sprite palette
+
+BackgroundData:
+.incbin "background.nam"
+
+SpriteData:
+;       Y   tile#   attribs      X
+.byte  $80,   $18,  %00000000,  $10  ; OAM sprite 1
+.byte  $80,   $1A,  %00000000,  $18  ; OAM sprite 2
+.byte  $88,   $19,  %00000000,  $10  ; OAM sprite 3
+.byte  $88,   $1B,  %00000000,  $18  ; OAM sprite 4
+
+.segment "CHARS"
+.incbin "battle.chr"
+
+;--------------------------------------------------------
+; vectors w/ addresses of handlers
+;--------------------------------------------------------
+
+.segment "VECTORS"
+.word NMI
+.word Reset
+.word IRQ
