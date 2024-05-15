@@ -107,6 +107,9 @@ InitVariables:
   sta Frame
   sta Clock60
 
+  lda #20                     ; set velocity to 20 pixels per 256 frames
+  sta XVel
+
   lda SpriteData+3            ; load default XPos of player sprite
   sta XPos+1                  ; store hi byte of position (which represents whole pixel count)
   lda SpriteData              ; load default YPos of player sprite
@@ -161,6 +164,15 @@ CheckRightButton:
   beq :+
     ;inc XPos                    ; move player sprite right
 :
+
+UpdateSpritePosition:
+  lda XVel                    ; load XVel
+  clc                         ; add XVel to XPos lo byte
+  adc XPos
+  sta XPos                    ; store new XPos lo byte
+  lda #0                      ; if a carry occurred when incrementing XPos lo byte, add to XPos hi byte
+  adc XPos+1
+  sta XPos+1                  ; store new XPos hi byte
 
 DrawSprite:
   lda XPos+1                  ; load hi byte of X position (which represents whole pixel count)
