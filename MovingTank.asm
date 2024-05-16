@@ -107,8 +107,8 @@ InitVariables:
   sta Frame
   sta Clock60
 
-  lda #20                     ; set velocity to 20 pixels per 256 frames
-  sta XVel
+  ;lda #20                     ; set velocity to 20 pixels per 256 frames
+  ;sta XVel
 
   lda SpriteData+3            ; load default XPos of player sprite
   sta XPos+1                  ; store hi byte of position (which represents whole pixel count)
@@ -161,9 +161,24 @@ CheckLeftButton:
 CheckRightButton:
   lda #BUTTON_RIGHT           ; check if right button is pressed
   bit Buttons
-  beq :+
-    ;inc XPos                    ; move player sprite right
-:
+  beq RightButtonNotPressed
+RightButtonPressed:
+    lda XVel                  ; load current XVel
+    clc                       ; add ACCEL to XVel
+    adc #ACCEL
+    cmp #MAXSPEED             ; is new XVel > MAXSPEED?
+    bcc :+                    ; if no, continue with new XVel
+      lda #MAXSPEED           ; else, new XVel = MAXSPEED
+:   sta XVel                  ; store new XVel
+    jmp UpdateSpritePosition
+RightButtonNotPressed:
+    lda XVel                  ; load current XVel
+    cmp #BRAKE                ; is current XVel < BRAKE?
+    bcs :+                    ; if no, continue with current XVel
+      lda #BRAKE              ; else, load accumulator with Brake (to become BRRAKE - BRAKE = 0 in next step)
+:   sec                       ; subtract BRAKE from XVel
+    sbc #BRAKE
+    sta XVel                  ; store new XVel
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
