@@ -173,12 +173,12 @@ RightButtonPressed:
     jmp UpdateSpritePosition
 RightButtonNotPressed:
     lda XVel                  ; load current XVel
-    cmp #BRAKE                ; is current XVel < BRAKE?
-    bcs :+                    ; if no, continue with current XVel
-      lda #BRAKE              ; else, load accumulator with Brake (to become BRRAKE - BRAKE = 0 in next step)
-:   sec                       ; subtract BRAKE from XVel
+    sec                       ; subtract BRAKE from XVel
     sbc #BRAKE
-    sta XVel                  ; store new XVel
+    ; cmp #0                  ; is new XVel > 0?
+    bpl :+                    ; if yes, continue with current XVel
+      lda #0                  ; else, new XVel = 0
+:   sta XVel
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
