@@ -182,7 +182,9 @@ CheckRightButton:
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
-  clc                         ; add XVel to XPos lo byte
+  bpl :+
+    dec XPos+1                ; if velocity is negative, decrement 1 (i.e., add $FF in two's complement) from hi-byte to sign-extend
+: clc                         ; add XVel to XPos lo byte
   adc XPos
   sta XPos                    ; store new XPos lo byte
   lda #0                      ; if a carry occurred when incrementing XPos lo byte, add to XPos hi byte
