@@ -182,7 +182,22 @@ CheckLeftButton:
   bit Buttons
   beq LeftButtonNotPressed         ; if no, skip to deceleration
     LeftButtonPressed:
+      lda XVel                      ; load current XVel
+      sec                           ; subtract ACCEL from XVel
+      sbc #ACCEL
+      cmp #256-MAXSPEED             ; is new XVel < MAXSPEED?
+      bcs :+                        ; if no, continue with new XVel
+          lda #256-MAXSPEED         ; else, new XVel = MAXSPEED
+    : sta XVel                      ; store new XVel
+      jmp UpdateSpritePosition
     LeftButtonNotPressed:
+      lda XVel                      ; load current XVel
+      clc                           ; subtract BRAKE from XVel
+      adc #BRAKE
+      ; cmp #0                      ; is new XVel < 0?
+      bmi :+                        ; if yes, continue with current XVel
+          lda #0                    ; else, new XVel = 0
+    : sta XVel   
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
