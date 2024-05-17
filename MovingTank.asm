@@ -151,28 +151,28 @@ CheckRightLeftButtonsNoVelocity:
   beq UpdateSpritePosition    ; if yes, tank is stationary + no buttons pressed; skip button reads entirely
 
 CheckRightButton:
-  lda XVel                    ; load current XVel
-  bmi UpdateSpritePosition    ; if current XVel is negative, skip entire code block
-  lda #BUTTON_RIGHT           ; check if right button is pressed
+  lda XVel                          ; load current XVel
+  bmi UpdateSpritePosition          ; if current XVel is negative, skip entire code block
+  lda #BUTTON_RIGHT                 ; check if right button is pressed
   bit Buttons
-  beq RightButtonNotPressed
-    RightButtonPressed:
-      lda XVel                  ; load current XVel
-      clc                       ; add ACCEL to XVel
+  beq RightButtonNotPressed         ; if no, skip to deceleration
+    RightButtonPressed:             ; else, proceed to acceleration
+      lda XVel                      ; load current XVel
+      clc                           ; add ACCEL to XVel
       adc #ACCEL
-      cmp #MAXSPEED             ; is new XVel > MAXSPEED?
-      bcc :+                    ; if no, continue with new XVel
-          lda #MAXSPEED         ; else, new XVel = MAXSPEED
-    : sta XVel                ; store new XVel
+      cmp #MAXSPEED                 ; is new XVel > MAXSPEED?
+      bcc :+                        ; if no, continue with new XVel
+          lda #MAXSPEED             ; else, new XVel = MAXSPEED
+    : sta XVel                      ; store new XVel
       jmp UpdateSpritePosition
     RightButtonNotPressed:
-      lda XVel                  ; load current XVel
-      sec                       ; subtract BRAKE from XVel
+      lda XVel                      ; load current XVel
+      sec                           ; subtract BRAKE from XVel
       sbc #BRAKE
-      ; cmp #0                  ; is new XVel > 0?
-      bpl :+                    ; if yes, continue with current XVel
-          lda #0                ; else, new XVel = 0
-    : sta XVel
+      ; cmp #0                      ; is new XVel > 0?
+      bpl :+                        ; if yes, continue with current XVel
+          lda #0                    ; else, new XVel = 0
+    : sta XVel                      ; stor new XVel
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
