@@ -143,6 +143,13 @@ NMI:
 
   jsr ReadControllers         ; read controller inputs
 
+CheckRightLeftButtonsNoVelocity:
+  lda #$03                    ; check if either left/right buttons are pressed
+  bit Buttons
+  bne CheckRightButton        ; if either button pressed, skip to button press reads
+  lda XVel                    ; else, is XVel = 0?
+  beq UpdateSpritePosition    ; if yes, tank is stationary + no buttons pressed; skip button reads entirely
+
 CheckRightButton:
   lda #BUTTON_RIGHT           ; check if right button is pressed
   bit Buttons
@@ -154,7 +161,7 @@ CheckRightButton:
       adc #ACCEL
       cmp #MAXSPEED             ; is new XVel > MAXSPEED?
       bcc :+                    ; if no, continue with new XVel
-        lda #MAXSPEED           ; else, new XVel = MAXSPEED
+          lda #MAXSPEED         ; else, new XVel = MAXSPEED
     : sta XVel                ; store new XVel
       jmp UpdateSpritePosition
     RightButtonNotPressed:
@@ -163,7 +170,7 @@ CheckRightButton:
       sbc #BRAKE
       ; cmp #0                  ; is new XVel > 0?
       bpl :+                    ; if yes, continue with current XVel
-        lda #0                  ; else, new XVel = 0
+          lda #0                ; else, new XVel = 0
     : sta XVel
 
 UpdateSpritePosition:
