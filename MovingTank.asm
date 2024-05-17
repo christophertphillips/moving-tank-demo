@@ -151,12 +151,13 @@ CheckRightLeftButtonsNoVelocity:
   beq UpdateSpritePosition    ; if yes, tank is stationary + no buttons pressed; skip button reads entirely
 
 CheckRightButton:
+  lda XVel                    ; load current XVel
+  bmi UpdateSpritePosition    ; if current XVel is negative, skip entire code block
   lda #BUTTON_RIGHT           ; check if right button is pressed
   bit Buttons
   beq RightButtonNotPressed
     RightButtonPressed:
       lda XVel                  ; load current XVel
-      bmi UpdateSpritePosition  ; if current XVel is negative, skip entire code block
       clc                       ; add ACCEL to XVel
       adc #ACCEL
       cmp #MAXSPEED             ; is new XVel > MAXSPEED?
