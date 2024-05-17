@@ -164,6 +164,7 @@ CheckRightButton:
   beq RightButtonNotPressed
     RightButtonPressed:
       lda XVel                  ; load current XVel
+      bmi UpdateSpritePosition  ; if current XVel is negative, skip entire code block
       clc                       ; add ACCEL to XVel
       adc #ACCEL
       cmp #MAXSPEED             ; is new XVel > MAXSPEED?
