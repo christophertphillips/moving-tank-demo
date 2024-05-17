@@ -143,21 +143,6 @@ NMI:
 
   jsr ReadControllers         ; read controller inputs
 
-CheckUpButton:
-  lda #BUTTON_UP              ; check if up button is pressed
-  bit Buttons
-  beq CheckDownButton
-    ;dec YPos                    ; move player sprite up
-CheckDownButton:
-  lda #BUTTON_DOWN            ; check if down button is pressed
-  bit Buttons
-  beq CheckLeftButton
-    ;inc YPos                    ; move player sprite down
-CheckLeftButton:
-  lda #BUTTON_LEFT            ; check if left button is pressed
-  bit Buttons
-  beq CheckRightButton
-    ;dec XPos                    ; move player sprite left
 CheckRightButton:
   lda #BUTTON_RIGHT           ; check if right button is pressed
   bit Buttons
