@@ -152,7 +152,7 @@ CheckRightLeftButtonsNoVelocity:
 
 CheckRightButton:
   lda XVel                          ; load current XVel
-  bmi UpdateSpritePosition          ; if current XVel is negative, skip entire code block
+  bmi CheckLeftButton               ; if current XVel is negative, skip entire code block
   lda #BUTTON_RIGHT                 ; check if right button is pressed
   bit Buttons
   beq RightButtonNotPressed         ; if no, skip to deceleration
@@ -164,7 +164,7 @@ CheckRightButton:
       bcc :+                        ; if no, continue with new XVel
           lda #MAXSPEED             ; else, new XVel = MAXSPEED
     : sta XVel                      ; store new XVel
-      jmp UpdateSpritePosition
+      jmp CheckLeftButton
     RightButtonNotPressed:
       lda XVel                      ; load current XVel
       sec                           ; subtract BRAKE from XVel
@@ -173,6 +173,16 @@ CheckRightButton:
       bpl :+                        ; if yes, continue with current XVel
           lda #0                    ; else, new XVel = 0
     : sta XVel                      ; stor new XVel
+
+CheckLeftButton:
+  lda XVel                          ; load current XVel
+  beq :+
+      bpl UpdateSpritePosition     ; if current XVel is positive, skip entire code block
+: lda #BUTTON_LEFT                 ; check if right button is pressed
+  bit Buttons
+  beq LeftButtonNotPressed         ; if no, skip to deceleration
+    LeftButtonPressed:
+    LeftButtonNotPressed:
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
