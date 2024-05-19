@@ -143,61 +143,61 @@ NMI:
 
   jsr ReadControllers         ; read controller inputs
 
-CheckRightLeftButtonsNoVelocity:
-  lda #$03                    ; check if either left/right buttons are pressed
-  bit Buttons
-  bne CheckRightButton        ; if either button pressed, skip to button press reads
-  lda XVel                    ; else, is XVel = 0?
-  beq UpdateSpritePosition    ; if yes, tank is stationary + no buttons pressed; skip button reads entirely
+; CheckRightLeftButtonsNoVelocity:
+;   lda #$03                    ; check if either left/right buttons are pressed
+;   bit Buttons
+;   bne CheckRightButton        ; if either button pressed, skip to button press reads
+;   lda XVel                    ; else, is XVel = 0?
+;   beq UpdateSpritePosition    ; if yes, tank is stationary + no buttons pressed; skip button reads entirely
 
-CheckRightButton:
-  lda XVel                          ; load current XVel
-  bmi CheckLeftButton               ; if current XVel is negative, skip entire code block
-  lda #BUTTON_RIGHT                 ; check if right button is pressed
-  bit Buttons
-  beq RightButtonNotPressed         ; if no, skip to deceleration
-    RightButtonPressed:             ; else, proceed to acceleration
-      lda XVel                      ; load current XVel
-      clc                           ; add ACCEL to XVel
-      adc #ACCEL
-      cmp #MAXSPEED                 ; is new XVel > MAXSPEED?
-      bcc :+                        ; if no, continue with new XVel
-          lda #MAXSPEED             ; else, new XVel = MAXSPEED
-    : sta XVel                      ; store new XVel
-      jmp CheckLeftButton
-    RightButtonNotPressed:
-      lda XVel                      ; load current XVel
-      sec                           ; subtract BRAKE from XVel
-      sbc #BRAKE
-      ; cmp #0                      ; is new XVel > 0?
-      bpl :+                        ; if yes, continue with current XVel
-          lda #0                    ; else, new XVel = 0
-    : sta XVel                      ; stor new XVel
+; CheckRightButton:
+;   lda XVel                          ; load current XVel
+;   bmi CheckLeftButton               ; if current XVel is negative, skip entire code block
+;   lda #BUTTON_RIGHT                 ; check if right button is pressed
+;   bit Buttons
+;   beq RightButtonNotPressed         ; if no, skip to deceleration
+;     RightButtonPressed:             ; else, proceed to acceleration
+;       lda XVel                      ; load current XVel
+;       clc                           ; add ACCEL to XVel
+;       adc #ACCEL
+;       cmp #MAXSPEED                 ; is new XVel > MAXSPEED?
+;       bcc :+                        ; if no, continue with new XVel
+;           lda #MAXSPEED             ; else, new XVel = MAXSPEED
+;     : sta XVel                      ; store new XVel
+;       jmp CheckLeftButton
+;     RightButtonNotPressed:
+;       lda XVel                      ; load current XVel
+;       sec                           ; subtract BRAKE from XVel
+;       sbc #BRAKE
+;       ; cmp #0                      ; is new XVel > 0?
+;       bpl :+                        ; if yes, continue with current XVel
+;           lda #0                    ; else, new XVel = 0
+;     : sta XVel                      ; stor new XVel
 
-CheckLeftButton:
-  lda XVel                          ; load current XVel
-  beq :+
-      bpl UpdateSpritePosition     ; if current XVel is positive, skip entire code block
-: lda #BUTTON_LEFT                 ; check if right button is pressed
-  bit Buttons
-  beq LeftButtonNotPressed         ; if no, skip to deceleration
-    LeftButtonPressed:
-      lda XVel                      ; load current XVel
-      sec                           ; subtract ACCEL from XVel
-      sbc #ACCEL
-      cmp #256-MAXSPEED             ; is new XVel < MAXSPEED?
-      bcs :+                        ; if no, continue with new XVel
-          lda #256-MAXSPEED         ; else, new XVel = MAXSPEED
-    : sta XVel                      ; store new XVel
-      jmp UpdateSpritePosition
-    LeftButtonNotPressed:
-      lda XVel                      ; load current XVel
-      clc                           ; subtract BRAKE from XVel
-      adc #BRAKE
-      ; cmp #0                      ; is new XVel < 0?
-      bmi :+                        ; if yes, continue with current XVel
-          lda #0                    ; else, new XVel = 0
-    : sta XVel   
+; CheckLeftButton:
+;   lda XVel                          ; load current XVel
+;   beq :+
+;       bpl UpdateSpritePosition     ; if current XVel is positive, skip entire code block
+; : lda #BUTTON_LEFT                 ; check if right button is pressed
+;   bit Buttons
+;   beq LeftButtonNotPressed         ; if no, skip to deceleration
+;     LeftButtonPressed:
+;       lda XVel                      ; load current XVel
+;       sec                           ; subtract ACCEL from XVel
+;       sbc #ACCEL
+;       cmp #256-MAXSPEED             ; is new XVel < MAXSPEED?
+;       bcs :+                        ; if no, continue with new XVel
+;           lda #256-MAXSPEED         ; else, new XVel = MAXSPEED
+;     : sta XVel                      ; store new XVel
+;       jmp UpdateSpritePosition
+;     LeftButtonNotPressed:
+;       lda XVel                      ; load current XVel
+;       clc                           ; subtract BRAKE from XVel
+;       adc #BRAKE
+;       ; cmp #0                      ; is new XVel < 0?
+;       bmi :+                        ; if yes, continue with current XVel
+;           lda #0                    ; else, new XVel = 0
+;     : sta XVel   
 
 UpdateSpritePosition:
   lda XVel                    ; load XVel
