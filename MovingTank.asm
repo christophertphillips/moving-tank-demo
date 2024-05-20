@@ -241,14 +241,14 @@ StationaryTankApplyNegativeAccel:
 
 MovingTankNegativeVel:
   CHECK_BUTTON #BUTTON_LEFT             ; is left button pressed?
-  beq MovingTankNegativeDecel           ; if NO, tank is decelerating while negative-velocity; jump to MovingTankApplyNegativeDecel
+  beq MovingTankApplyNegativeDecel           ; if NO, tank is decelerating while negative-velocity; jump to MovingTankApplyNegativeDecel
                                         ; else, tank is accelerating while negative-velocity; fall through to MovingTankApplyNegativeAccel
 
-MovingTankNegativeAccel:
+MovingTankApplyNegativeAccel:
   PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to negative-velocity tank
   jmp Done                              ; done with motion update; jump to Done
 
-MovingTankNegativeDecel:
+MovingTankApplyNegativeDecel:
   PERFORM_NEGATIVE_DECEL                ; apply negative deceleration to negative-velocity tank
   jmp Done                              ; done with motion update; jump to Done
 
