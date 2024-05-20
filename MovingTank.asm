@@ -249,6 +249,8 @@ MovingTankNegativeAccel:
   jmp Done                              ; done with motion update; jump to Done
 
 MovingTankNegativeDecel:
+  PERFORM_NEGATIVE_DECEL                ; apply negative deceleration to negative-velocity tank
+  jmp Done                              ; done with motion update; jump to Done
 
 ;;;;;;;;;; End of tank motion code ;;;;;;;;;;
 
