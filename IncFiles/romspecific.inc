@@ -32,3 +32,13 @@
       lda #0                            ; else, new XVel = 0
   : sta XVel                            ; store new XVel
 .endmacro
+
+.macro PERFORM_NEGATIVE_DECEL
+  lda XVel                      ; load current XVel
+  clc                           ; subtract BRAKE from XVel
+  adc #BRAKE
+  ; cmp #0                      ; is new XVel < 0?
+  bmi :+                        ; if yes, continue with current XVel
+      lda #0                    ; else, new XVel = 0
+  : sta XVel
+.endmacro
