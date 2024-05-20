@@ -206,30 +206,34 @@ NMI:
 StationaryTank:
   lda #BUTTON_RIGHT                     ; is right button pressed?
   bit Buttons
-  beq Done                              ; if NO, tank is "idling"; jump to Done
-                                        ; else, apply positive acceleration to stationary tank
-      lda XVel                          ; load current XVel
-      clc                               ; add ACCEL to XVel
-      adc #ACCEL
-      cmp #MAXSPEED                     ; is new XVel > MAXSPEED?
-      bcc :+                            ; if no, continue with new XVel
-          lda #MAXSPEED                 ; else, new XVel = MAXSPEED
-    : sta XVel                          ; store new XVel
-      jmp Done                          ; done with motion update; jump to Done
+  bne StationaryTankApplyPositiveAccel  ; if yes, tank is accelerating from a v = 0; jump to StationaryTankApplyPositiveAccel
+  jmp Done                              ; if NO, tank is "idling"; jump to Done
 
 MovingTankPositiveVel:
   lda #BUTTON_RIGHT                     ; is right button pressed?
   bit Buttons
-  beq MovingTankApplyPositiveDecel      ; if no, apply positive deceleration to postive-acceleration tank
-                                        ; else, apply positive acceleration to positive-velocity tank
-      lda XVel                          ; load current XVel
-      clc                               ; add ACCEL to XVel
-      adc #ACCEL
-      cmp #MAXSPEED                     ; is new XVel > MAXSPEED?
-      bcc :+                            ; if no, continue with new XVel
-          lda #MAXSPEED                 ; else, new XVel = MAXSPEED
-    : sta XVel                          ; store new XVel
-      jmp Done                          ; done with motion update; jump to Done
+  bne MovingTankApplyPositiveAccel      ; if yes, tank is accelerating while currently in motion; jump to MovingTankApplyPositiveAccel
+  jmp MovingTankApplyPositiveDecel      ; else, tank is decelerating while curretly in motion; jump to MovingTankApplyPositiveDecel
+
+StationaryTankApplyPositiveAccel:
+  lda XVel                              ; load current XVel
+  clc                                   ; add ACCEL to XVel
+  adc #ACCEL
+  cmp #MAXSPEED                         ; is new XVel > MAXSPEED?
+  bcc :+                                ; if no, continue with new XVel
+      lda #MAXSPEED                     ; else, new XVel = MAXSPEED
+: sta XVel                              ; store new XVel
+  jmp Done                              ; done with motion update; jump to Done
+
+MovingTankApplyPositiveAccel:
+  lda XVel                              ; load current XVel
+  clc                                   ; add ACCEL to XVel
+  adc #ACCEL
+  cmp #MAXSPEED                         ; is new XVel > MAXSPEED?
+  bcc :+                                ; if no, continue with new XVel
+      lda #MAXSPEED                     ; else, new XVel = MAXSPEED
+: sta XVel                              ; store new XVel
+  jmp Done                              ; done with motion update; jump to Done
 
 MovingTankApplyPositiveDecel:
   lda XVel                              ; load current XVel
@@ -238,8 +242,8 @@ MovingTankApplyPositiveDecel:
   ; cmp #0                              ; is new XVel > 0?
   bpl :+                                ; if yes, continue with current XVel
       lda #0                            ; else, new XVel = 0
-  : sta XVel
-  jmp Done
+  : sta XVel                            ; store new XVel
+  jmp Done                              ; done with motion update; jump to Done
 
 Done:
 
