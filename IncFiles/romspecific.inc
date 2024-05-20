@@ -13,6 +13,16 @@
 : sta XVel                              ; store new XVel
 .endmacro
 
+.macro PERFORM_NEGATIVE_ACCEL
+  lda XVel                              ; load current XVel
+  sec                                   ; subtract ACCEL from XVel
+  sbc #ACCEL
+  cmp #256-MAXSPEED                     ; is new XVel < MAXSPEED?
+  bcs :+                                ; if no, continue with new XVel
+      lda #256-MAXSPEED                 ; else, new XVel = MAXSPEED
+  : sta XVel                            ; store new XVel
+.endmacro
+
 .macro PERFORM_POSITIVE_DECEL
   lda XVel                              ; load current XVel
   sec                                   ; subtract BRAKE from XVel
