@@ -203,7 +203,7 @@ NMI:
   lda XVel                              ; is the current XVel < 0?
   bmi MovingTankNegativeVel             ; if yes, tank is negative-velocity; jump to MovingTankNegativeVel
   beq StationaryTank                    ; else if XVel = 0, tank is stationary; proceed to StationaryTank
-                                        ; else, tank is positive-velocty; fall through to MovingTankPositiveVel
+                                        ; else, tank is positive-velocity; fall through to MovingTankPositiveVel
 
 ;;;;;;;;;; Positive-vel tank ;;;;;;;;;;
 
@@ -223,15 +223,19 @@ MovingTankApplyPositiveDecel:
 ;;;;;;;;;; Stationary tank ;;;;;;;;;;
 
 StationaryTank:
-  CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
+  CHECK_BUTTON #$03                     ; is either the right button or left button pressed?
   beq Done                              ; if NO, tank is "idling"; jump to Done
-                                        ; else, tank is accelerating from v = 0; fall through to StationaryTankApplyPositiveAccel
+  CHECK_BUTTON #BUTTON_RIGHT            ; else, is right button pressed?
+  beq StationaryTankApplyNegativeAccel  ; if NO, tank is negative-accelerating from v = 0; jump to StationaryTankNegativeAccel 
+                                        ; else, tank is positive-accelerating from v = 0; fall through to StationaryTankPositiveAccel
 
 StationaryTankApplyPositiveAccel:
   PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to stationary tank
   jmp Done                              ; done with motion update; jump to Done
 
-StationaryTankNegativeAccel:
+StationaryTankApplyNegativeAccel:
+  PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to stationary tank
+  jmp Done                              ; done with motion update; jump to Done
 
 ;;;;;;;;;; Negative-vel tank ;;;;;;;;;;
 
