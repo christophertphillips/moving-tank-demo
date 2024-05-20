@@ -220,7 +220,7 @@ StationaryTank:
 MovingTankPositiveVel:
   lda #BUTTON_RIGHT                     ; is right button pressed?
   bit Buttons
-  beq Done                              ; if no, jump to Done
+  beq MovingTankApplyPositiveDecel      ; if no, apply positive deceleration to postive-acceleration tank
                                         ; else, apply positive acceleration to positive-velocity tank
       lda XVel                          ; load current XVel
       clc                               ; add ACCEL to XVel
@@ -230,6 +230,16 @@ MovingTankPositiveVel:
           lda #MAXSPEED                 ; else, new XVel = MAXSPEED
     : sta XVel                          ; store new XVel
       jmp Done                          ; done with motion update; jump to Done
+
+MovingTankApplyPositiveDecel:
+  lda XVel                              ; load current XVel
+  sec                                   ; subtract BRAKE from XVel
+  sbc #BRAKE
+  ; cmp #0                              ; is new XVel > 0?
+  bpl :+                                ; if yes, continue with current XVel
+      lda #0                            ; else, new XVel = 0
+  : sta XVel
+  jmp Done
 
 Done:
 
