@@ -199,6 +199,40 @@ NMI:
 ;           lda #0                    ; else, new XVel = 0
 ;     : sta XVel   
 
+  lda XVel                              ; is the current XVel = 0?
+  bne MovingTankPositiveVel             ; if NO, tank is in motion to the right; jump to MovingTankPositiveVel
+                                        ; else, tank is stationary; fall through to StationaryTank
+
+StationaryTank:
+  lda #BUTTON_RIGHT                     ; is right button pressed?
+  bit Buttons
+  beq Done                              ; if NO, tank is "idling"; jump to Done
+                                        ; else, apply positive acceleration to stationary tank
+      lda XVel                          ; load current XVel
+      clc                               ; add ACCEL to XVel
+      adc #ACCEL
+      cmp #MAXSPEED                     ; is new XVel > MAXSPEED?
+      bcc :+                            ; if no, continue with new XVel
+          lda #MAXSPEED                 ; else, new XVel = MAXSPEED
+    : sta XVel                          ; store new XVel
+      jmp Done                          ; done with motion update; jump to Done
+
+MovingTankPositiveVel:
+  lda #BUTTON_RIGHT                     ; is right button pressed?
+  bit Buttons
+  beq Done                              ; if no, jump to Done
+                                        ; else, apply positive acceleration to positive-velocity tank
+      lda XVel                          ; load current XVel
+      clc                               ; add ACCEL to XVel
+      adc #ACCEL
+      cmp #MAXSPEED                     ; is new XVel > MAXSPEED?
+      bcc :+                            ; if no, continue with new XVel
+          lda #MAXSPEED                 ; else, new XVel = MAXSPEED
+    : sta XVel                          ; store new XVel
+      jmp Done                          ; done with motion update; jump to Done
+
+Done:
+
 UpdateSpritePosition:
   lda XVel                    ; load XVel
   bpl :+
