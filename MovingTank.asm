@@ -201,22 +201,22 @@ NMI:
 ;     : sta XVel   
 
   lda XVel                              ; is the current XVel = 0?
-  bne MovingTankPositiveVel             ; if NO, tank is in motion to the right; jump to MovingTankPositiveVel
+  bne MovingTankPositiveVel             ; if NO, tank is positive-velocity; jump to MovingTankPositiveVel
                                         ; else, tank is stationary; fall through to StationaryTank
 
 StationaryTank:
   CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
-  bne StationaryTankApplyPositiveAccel  ; if yes, tank is accelerating from a v = 0; jump to StationaryTankApplyPositiveAccel
-  jmp Done                              ; if NO, tank is "idling"; jump to Done
-
-MovingTankPositiveVel:
-  CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
-  bne MovingTankApplyPositiveAccel      ; if yes, tank is accelerating while currently in motion; jump to MovingTankApplyPositiveAccel
-  jmp MovingTankApplyPositiveDecel      ; else, tank is decelerating while curretly in motion; jump to MovingTankApplyPositiveDecel
+  beq Done                              ; if NO, tank is "idling"; jump to Done
+                                        ; else, tank is accelerating from v = 0; fall through to StationaryTankApplyPositiveAccel
 
 StationaryTankApplyPositiveAccel:
   PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to stationary tank
   jmp Done                              ; done with motion update; jump to Done
+
+MovingTankPositiveVel:
+  CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
+  beq MovingTankApplyPositiveDecel      ; if NO, tank is decelerating while positive-velocity; jump to MovingTankApplyPositiveDecel
+                                        ; else, tank is accelerating while positive-velocity; fall through to MovingTankApplyPositiveAccel
 
 MovingTankApplyPositiveAccel:
   PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to positive-velocity tank
