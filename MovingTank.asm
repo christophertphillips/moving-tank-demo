@@ -207,59 +207,59 @@ NMI:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Alternate tank motion implementation #1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  lda XVel                              ; is the current XVel < 0?
-  bmi MovingTankNegativeVel             ; if yes, tank is negative-velocity; jump to MovingTankNegativeVel
-  beq StationaryTank                    ; else if XVel = 0, tank is stationary; proceed to StationaryTank
-                                        ; else, tank is positive-velocity; fall through to MovingTankPositiveVel
+;   lda XVel                              ; is the current XVel < 0?
+;   bmi MovingTankNegativeVel             ; if yes, tank is negative-velocity; jump to MovingTankNegativeVel
+;   beq StationaryTank                    ; else if XVel = 0, tank is stationary; proceed to StationaryTank
+;                                         ; else, tank is positive-velocity; fall through to MovingTankPositiveVel
 
-;;;;;;;;;; Positive-vel tank ;;;;;;;;;;
+; ;;;;;;;;;; Positive-vel tank ;;;;;;;;;;
 
-MovingTankPositiveVel:
-  CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
-  beq MovingTankApplyPositiveDecel      ; if NO, tank is decelerating while positive-velocity; jump to MovingTankApplyPositiveDecel
-                                        ; else, tank is accelerating while positive-velocity; fall through to MovingTankApplyPositiveAccel
+; MovingTankPositiveVel:
+;   CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
+;   beq MovingTankApplyPositiveDecel      ; if NO, tank is decelerating while positive-velocity; jump to MovingTankApplyPositiveDecel
+;                                         ; else, tank is accelerating while positive-velocity; fall through to MovingTankApplyPositiveAccel
 
-MovingTankApplyPositiveAccel:
-  PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to positive-velocity tank
-  jmp Done                              ; done with motion update; jump to Done
+; MovingTankApplyPositiveAccel:
+;   PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to positive-velocity tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-MovingTankApplyPositiveDecel:
-  PERFORM_POSITIVE_DECEL                ; apply positive deceleration to positive-velocity tank
-  jmp Done                              ; done with motion update; jump to Done
+; MovingTankApplyPositiveDecel:
+;   PERFORM_POSITIVE_DECEL                ; apply positive deceleration to positive-velocity tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-;;;;;;;;;; Stationary tank ;;;;;;;;;;
+; ;;;;;;;;;; Stationary tank ;;;;;;;;;;
 
-StationaryTank:
-  CHECK_BUTTON #$03                     ; is either the right button or left button pressed?
-  beq Done                              ; if NO, tank is "idling"; jump to Done
-  CHECK_BUTTON #BUTTON_RIGHT            ; else, is right button pressed?
-  beq StationaryTankApplyNegativeAccel  ; if NO, tank is negative-accelerating from v = 0; jump to StationaryTankNegativeAccel 
-                                        ; else, tank is positive-accelerating from v = 0; fall through to StationaryTankPositiveAccel
+; StationaryTank:
+;   CHECK_BUTTON #$03                     ; is either the right button or left button pressed?
+;   beq Done                              ; if NO, tank is "idling"; jump to Done
+;   CHECK_BUTTON #BUTTON_RIGHT            ; else, is right button pressed?
+;   beq StationaryTankApplyNegativeAccel  ; if NO, tank is negative-accelerating from v = 0; jump to StationaryTankNegativeAccel 
+;                                         ; else, tank is positive-accelerating from v = 0; fall through to StationaryTankPositiveAccel
 
-StationaryTankApplyPositiveAccel:
-  PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to stationary tank
-  jmp Done                              ; done with motion update; jump to Done
+; StationaryTankApplyPositiveAccel:
+;   PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to stationary tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-StationaryTankApplyNegativeAccel:
-  PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to stationary tank
-  jmp Done                              ; done with motion update; jump to Done
+; StationaryTankApplyNegativeAccel:
+;   PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to stationary tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-;;;;;;;;;; Negative-vel tank ;;;;;;;;;;
+; ;;;;;;;;;; Negative-vel tank ;;;;;;;;;;
 
-MovingTankNegativeVel:
-  CHECK_BUTTON #BUTTON_LEFT             ; is left button pressed?
-  beq MovingTankApplyNegativeDecel           ; if NO, tank is decelerating while negative-velocity; jump to MovingTankApplyNegativeDecel
-                                        ; else, tank is accelerating while negative-velocity; fall through to MovingTankApplyNegativeAccel
+; MovingTankNegativeVel:
+;   CHECK_BUTTON #BUTTON_LEFT             ; is left button pressed?
+;   beq MovingTankApplyNegativeDecel           ; if NO, tank is decelerating while negative-velocity; jump to MovingTankApplyNegativeDecel
+;                                         ; else, tank is accelerating while negative-velocity; fall through to MovingTankApplyNegativeAccel
 
-MovingTankApplyNegativeAccel:
-  PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to negative-velocity tank
-  jmp Done                              ; done with motion update; jump to Done
+; MovingTankApplyNegativeAccel:
+;   PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to negative-velocity tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-MovingTankApplyNegativeDecel:
-  PERFORM_NEGATIVE_DECEL                ; apply negative deceleration to negative-velocity tank
-  jmp Done                              ; done with motion update; jump to Done
+; MovingTankApplyNegativeDecel:
+;   PERFORM_NEGATIVE_DECEL                ; apply negative deceleration to negative-velocity tank
+;   jmp Done                              ; done with motion update; jump to Done
 
-;;;;;;;;;; End of tank motion code ;;;;;;;;;;
+; ;;;;;;;;;; End of tank motion code ;;;;;;;;;;
 
 
 
