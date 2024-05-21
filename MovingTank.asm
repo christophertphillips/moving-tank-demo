@@ -144,6 +144,8 @@ NMI:
 
   jsr ReadControllers         ; read controller inputs
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Original tank motion implementation ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; CheckRightLeftButtonsNoVelocity:
 ;   lda #$03                    ; check if either left/right buttons are pressed
 ;   bit Buttons
@@ -200,6 +202,11 @@ NMI:
 ;           lda #0                    ; else, new XVel = 0
 ;     : sta XVel   
 
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Alternate tank motion implementation #1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   lda XVel                              ; is the current XVel < 0?
   bmi MovingTankNegativeVel             ; if yes, tank is negative-velocity; jump to MovingTankNegativeVel
   beq StationaryTank                    ; else if XVel = 0, tank is stationary; proceed to StationaryTank
@@ -253,6 +260,11 @@ MovingTankApplyNegativeDecel:
   jmp Done                              ; done with motion update; jump to Done
 
 ;;;;;;;;;; End of tank motion code ;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Alternate tank motion implementation #2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 Done:
 
