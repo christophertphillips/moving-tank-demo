@@ -22,6 +22,7 @@ XPos:     .res 2              ; reserve 2 byte to store player X position, (8.8 
 YPos:     .res 2              ; reserve 2 byte to store player Y position, (8.8 fixed-point math), (Yhi + Ylo/256) pixels
 XVel:     .res 1              ; reserve 1 byte to store player X speed in pixels per 256 frames (pixel/256frames)
 YVel:     .res 1              ; reserve 1 byte to store player Y speed in pixels per 256 frames (pixel/256frames)
+TileOffset: .res 1            ; reserve 1 byte to store tile offset (0 or 4)
 Frame:    .res 1              ; reserve 1 byte to store # of frames
 Clock60:  .res 1              ; reserve 1 byte to store # of elapsed seconds
 BgPtr:    .res 2              ; reserve 2 bytes to store a pointer to the background address
@@ -107,9 +108,7 @@ InitVariables:
   lda #0                      ; set frame, clock counters to 0
   sta Frame
   sta Clock60
-
-  ;lda #20                     ; set velocity to 20 pixels per 256 frames
-  ;sta XVel
+  sta TileOffset              ; initialize tile offset to 0
 
   lda SpriteData+3            ; load default XPos of player sprite
   sta XPos+1                  ; store hi byte of position (which represents whole pixel count)
@@ -331,6 +330,32 @@ DrawSprite:
   adc #8
   sta $0208                   ; set the third player sprite Y position to be YPos
   sta $020C                   ; set the fourth player sprite Y position to be YPos
+
+  lda XPos+1                  ; load hi byte of X position (which represents whole pixel count)
+  and #$01                    ; mask all bits except least significant bit
+  asl                         ; shift least-sig bit to 2^2=4 position
+  asl
+  sta TileOffset              ; store offset value (0 or 4)
+
+  lda #$18                    ; load default tile# for first sprite of metasprite
+  clc                         ; add offset (0 or 4)
+  adc TileOffset
+  sta $0201                   ; store tile#
+
+  lda #$1A                    ; load default tile# for second sprite of metasprite
+  clc                         ; add offset (0 or 4)
+  adc TileOffset
+  sta $0205                   ; store tile#
+
+  lda #$19                    ; load default tile# for third sprite of metasprite
+  clc                         ; add offset (0 or 4)
+  adc TileOffset
+  sta $0209                   ; store tile#
+
+  lda #$1B                    ; load default tile# for fourth sprite of metasprite
+  clc                         ; add offset (0 or 4)
+  adc TileOffset
+  sta $020D                   ; store tile#
 
   inc Frame                   ; increment Frame
   lda Frame                   ; check if 60 frames have been counted
