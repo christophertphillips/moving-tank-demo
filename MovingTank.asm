@@ -266,6 +266,46 @@ NMI:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Alternate tank motion implementation #2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+CheckRightLeftButtons:
+  CHECK_BUTTON #BUTTON_RIGHT            ; is right button pressed?
+  bne RightButtonPressed                ; if YES, jump to RightButtonPressed
+  CHECK_BUTTON #BUTTON_LEFT             ; is left button pressed?
+  bne LeftButtonPressed                 ; if YES, jump to LeftButtonPressed
+                                        ; else, no buttons prssed; fall throught to NoButtonsPressed
+  
+NoButtonsPressed:
+  lda XVel                              ; is the current XVel < 0?
+  bmi ApplyNegativeDecel                ; if yes, tank is negative-velocity; jump to ApplyNegativeDecel
+  beq Done                              ; else if XVel = 0, tank is "idling"; jump to Done
+                                        ; else, tank is positive-velocity; fall through to ApplyPositiveDecel
+
+ApplyPositiveDecel:
+  PERFORM_POSITIVE_DECEL                ; apply positive deceleration to positive-velocity tank
+  jmp Done                              ; done with motion update; jump to Done
+
+ApplyNegativeDecel:
+  PERFORM_NEGATIVE_DECEL                ; apply negative deceleration to negative-velocity tank
+  jmp Done                              ; done with motion update; jump to Done
+
+RightButtonPressed:
+  lda XVel                              ; is the current XVel < 0?
+  bmi ApplyNegativeDecel                ; if YES, tank is negative-velocity; jump to ApplyNegativeDecel
+                                        ; else, v >= 0; fall through to ApplyPositiveAccel
+
+ApplyPositiveAccel:
+  PERFORM_POSITIVE_ACCEL                ; apply positive acceleration to stationary tank
+  jmp Done                              ; done with motion update; jump to Done
+
+LeftButtonPressed:
+  lda XVel                              ; is the current XVel > 0?
+  beq :+
+    bpl ApplyPositiveDecel              ; if YES, tank is positive-velocity; jump to ApplyPositiveDecel
+:                                       ; else, v >= 0; fall through to ApplyNegativeAccel
+
+ApplyNegativeAccel:
+  PERFORM_NEGATIVE_ACCEL                ; apply negative acceleration to negative-velocity tank
+  ;jmp Done                             ; done with motion update; jump to Done
+
 Done:
 
 UpdateSpritePosition:
